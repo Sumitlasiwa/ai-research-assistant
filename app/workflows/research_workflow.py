@@ -22,7 +22,7 @@ def conduct_research(topic: str) -> dict:
             all_sources.append({
                 "title": result.get("title", ""),
                 "url": result.get("url", ""),
-                "snippet": result.get("content", ""),
+                "snippet": result.get("snippet", ""),
                 "score": result.get("score", 0),
                 "research_question": question
             })

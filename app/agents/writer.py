@@ -32,7 +32,6 @@ def generate_research_report(topic: str, sources: list[dict]) -> str:
     3. Detailed Analysis
     4. Challenges and Limitations
     5. Conclusion
-    6. References
 
     RULES:
     - Use only information supported by the provided sources.
