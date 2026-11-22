@@ -1,0 +1,11 @@
+services:
+  api:
+    build: .
+    container_name: ai-research-assistant
+    ports:
+      - "8000:8000"     # host port:container port
+    env_file:
+      - .env
+    volumes:
+      - ./reports:/code/reports
+    restart: unless-stopped
