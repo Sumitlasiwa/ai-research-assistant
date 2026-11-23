@@ -6,7 +6,7 @@ def save_graph_visualization():
     png_data = build_research_graph().get_graph().draw_mermaid_png()
     
     # Save to file
-    output_path = "workflow_graph.png"
+    output_path = "Architecture.png"
     with open(output_path, "wb") as f:
         f.write(png_data)
     
