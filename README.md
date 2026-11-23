@@ -20,7 +20,7 @@ The workflow also contains code for generating follow-up research queries, thoug
 - A Gemini API key
 - A Tavily API key
 
-The planner and reviewer uses `GEMINI_MODEL_STRONG`. Set it to a model available to your Gemini API key; unlike `GEMINI_MODEL`, the application does not provide a default for this setting.
+The planner and reviewer use `GEMINI_MODEL_STRONG`. Set it to a model available to your Gemini API key; unlike `GEMINI_MODEL`, the application does not provide a default for this setting.
 
 ## Setup
 
@@ -49,7 +49,7 @@ GEMINI_MODEL_STRONG=your_reviewer_model
 TAVILY_API_KEY=your_tavily_api_key
 ```
 
-`GEMINI_MODEL` defaults to `gemini-2.5-flash` if omitted. Both API keys are required, and `GEMINI_MODEL_STRONG` must be set for the planner and reviewer call. Keep `.env` private; it is excluded from the Docker build context and should not be committed.
+`GEMINI_MODEL` defaults to `gemini-2.5-flash` if omitted. Both API keys are required, and `GEMINI_MODEL_STRONG` must be set for planner and reviewer calls. Keep `.env` private; it is excluded from the Docker build context and should not be committed.
 
 ## Run locally
 
@@ -151,3 +151,29 @@ reports/        Generated reports (created when the first report is saved)
     </td>
   </tr>
 </table>
+
+## Limitations
+
+- **Research uses search snippets, not full source documents.** Tavily returns short content excerpts, and the writer and reviewer receive those snippets rather than fetching and reading the linked pages. This can omit context, qualifications, methods, or newer findings, so reports may be incomplete even when their citations point to relevant pages.
+- **Citations are not independently verified against full text.** The reviewer checks citations using the same snippets provided to the writer. It cannot confirm that a claim is supported by the complete linked source.
+- **Research breadth is limited.** The planner creates 3–5 questions and the researcher requests up to five results per question. The report therefore reflects a bounded search, not an exhaustive or systematic literature review.
+- **Research follow-up is not active.** The graph includes a query generator and research-revision route, but the current reviewer node only selects the writer or finishes. Missing evidence does not trigger another search.
+- **A report can finish without approval.** The workflow permits at most one writer revision. If the reviewer still has major findings, the report is finalized with `needs_revision` status rather than blocking delivery.
+- **Requests run synchronously.** The `/research` endpoint holds the HTTP request open while search, model calls, review, and PDF generation run. Long jobs can time out at clients or intermediaries, and there is no job status endpoint.
+- **Storage is local to the service.** Reports are written to a local `reports/` directory. This works for a single container with a mounted volume, but does not provide shared storage or retention controls for multiple instances.
+- **Operational safeguards are minimal.** The API has no authentication, rate limiting, user quotas, or structured application logging. Errors from research are returned as HTTP 502 details, which may expose internal error messages.
+- **Output formatting is intentionally basic.** The PDF exporter supports headings, simple bullets, and basic inline bold/italic text; complex Markdown such as tables may not render as expected.
+
+## Future enhancements for production readiness
+
+- **Fetch and extract source pages.** Retrieve linked pages where permitted, extract readable article text, handle JavaScript and paywalls gracefully, and store the retrieved text with source metadata. Keep snippet-only fallback behavior for unavailable pages.
+- **Strengthen source quality and citations.** Add domain and publication metadata, source ranking, publication-date checks, cross-source corroboration, and claim-to-passage citation validation. Preserve exact passages used so readers can audit important claims.
+- **Complete the research feedback loop.** Route evidence gaps to the query generator and researcher, cap follow-up searches and costs, and expose when a final report remains unapproved.
+- **Move long work to background jobs.** Return a job ID from submission, run workflows in a worker queue, and provide job status, progress, cancellation, and result endpoints.
+- **Add API protection.** Introduce authentication, rate limits, request size limits, per-user quotas, and safe error responses that avoid returning internal exception details.
+- **Use durable shared storage.** Store reports and research artifacts in object storage or a database, add retention/deletion policies, and support multiple API and worker instances.
+- **Improve reliability and visibility.** Add structured logs, request/job IDs, metrics, tracing, health/readiness checks, provider retry and timeout policies, and clear handling for provider outages and quota errors.
+- **Validate configuration at startup.** Check required API keys and model names with actionable messages; provide separate settings for development and production.
+- **Add automated quality gates.** Create unit and integration tests for API validation, graph routing, deduplication, report generation, and error paths; run linting, type checks, and CI before deployment.
+- **Harden deployment.** Run as a non-root user, pin and scan dependencies and container images, manage secrets outside `.env`, configure resource limits, and define production deployment and backup procedures.
+- **Improve report presentation.** Support richer Markdown in PDF output, include generation time and methodology, and offer report provenance and downloadable source metadata.
