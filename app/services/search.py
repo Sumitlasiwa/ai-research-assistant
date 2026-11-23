@@ -1,8 +1,10 @@
+from json import tool
 from tavily import TavilyClient
 from app.config import TAVILY_API_KEY
 import json
 
 client = TavilyClient(api_key=TAVILY_API_KEY)
+
 
 def search_web(query: str, max_results: int = 5) -> list[dict]:
 

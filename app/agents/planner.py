@@ -1,5 +1,5 @@
 import json
-from app.services.llm import generate_response
+from app.services.llm import generate_response, generate_response_reviewer
 
 
 def create_research_plan(topic: str) -> dict:
@@ -29,7 +29,7 @@ def create_research_plan(topic: str) -> dict:
     }}
     """
 
-    response = generate_response(prompt).strip()
+    response = generate_response_reviewer(prompt).strip()
 
     # Strip markdown code fences
     if response.startswith("```"):
