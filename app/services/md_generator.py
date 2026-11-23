@@ -19,11 +19,11 @@ def save_markdown_report(topic: str, report: str,
     for source in sources:
         references += (
             f"- [{source['source_id']}] "
-            f"[{source.get('title', 'Untitled')}])"
+            f"[{source.get('title', 'Untitled')}]"
             f"({source['url']})\n"
         )
 
-    # report += references
+    report += references
 
     file_path = REPORTS_DIR / filename
     file_path.write_text(report, encoding="utf-8")
